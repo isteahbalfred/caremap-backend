@@ -9,11 +9,9 @@ export const authenticate = (
 ): void => {
   try {
     const authHeader = req.headers.authorization;
-
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next(new UnauthorizedError('Token manquant'));
     }
-
     const token = authHeader.split(' ')[1];
     const payload = verifyAccessToken(token);
     (req as any).user = payload;
