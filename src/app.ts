@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './modules/auth/auth.routes';
 import pharmacyRoutes from './modules/pharmacies/pharmacies.routes';
+import medicationRoutes from './modules/medications/medications.routes';
+import stockRoutes from './modules/stock/stock.routes';
 
 dotenv.config();
 
@@ -21,6 +23,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/pharmacies', pharmacyRoutes);
+app.use('/api/v1/medications', medicationRoutes);
+app.use('/api/v1/stock', stockRoutes);
 
 // ── Rate limiting global ─────────────────────────────────────
 app.use(rateLimit({
