@@ -7,25 +7,99 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(PATIENT)
-  createdAt DateTime @default(now())
+enum UserRole {
+  PATIENT
+  PHARMACY_ADMIN
+  CLINIC_ADMIN
+  SUPER_ADMIN
 }
 
-enum Role {
-  ADMIN
-  PHARMACIEN
-  CLINICIEN
-  PATIENT
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  firstName    String
+  lastName     String
+  role         UserRole  @default(PATIENT)
+  isActive     Boolean   @default(true)
+  refreshToken String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  pharmacy     Pharmacy?
+  clinic       Clinic?
+}
+
+model Pharmacy {
+  id          String            @id @default(uuid())
+  name        String
+  address     String
+  city        String
+  phone       String
+  latitude    Float
+  longitude   Float
+  logoUrl     String?
+  isValidated Boolean           @default(false)
+  isActive    Boolean           @default(true)
+  adminId     String            @unique
+  admin       User              @relation(fields: [adminId], references: [id])
+  medications MedicationStock[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([city])
+  @@index([isValidated, isActive])
+}
+
+model Category {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  medications Medication[]
 }
 
 model Medication {
+  id          String            @id @default(uuid())
+  name        String
+  genericName String?
+  description String?
+  imageUrl    String?
+  categoryId  String
+  category    Category          @relation(fields: [categoryId], references: [id])
+  stocks      MedicationStock[]
+
+  @@index([name])
+  @@index([categoryId])
+}
+
+model MedicationStock {
+  id           String     @id @default(uuid())
+  pharmacyId   String
+  pharmacy     Pharmacy   @relation(fields: [pharmacyId], references: [id])
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id])
+  quantity     Int        @default(0)
+  price        Decimal    @db.Decimal(10, 2)
+  threshold    Int        @default(10)
+  isAvailable  Boolean    @default(true)
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([pharmacyId, medicationId])
+}
+
+model Clinic {
   id          String   @id @default(uuid())
   name        String
-  description String?
-  price       Float
-  stock       Int
+  address     String
+  city        String
+  phone       String
+  latitude    Float
+  longitude   Float
+  logoUrl     String?
+  isValidated Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  adminId     String   @unique
+  admin       User     @relation(fields: [adminId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([city])
 }
