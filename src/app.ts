@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { errorHandler } from './middlewares/errorHandler';
+import authRoutes from './modules/auth/auth.routes';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/v1/auth', authRoutes);
 
 // ── Rate limiting global ─────────────────────────────────────
 app.use(rateLimit({
