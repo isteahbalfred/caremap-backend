@@ -6,4 +6,13 @@ export default {
   moduleFileExtensions: ['ts', 'js', 'json'],
   collectCoverageFrom: ['src/**/*.ts'],
   coverageDirectory: 'coverage',
+  setupFilesAfterFramework: ['<rootDir>/tests/setup.ts'],
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        strict: false,
+        skipLibCheck: true,
+      },
+    },
+  },
 };
