@@ -9,6 +9,7 @@ import pharmacyRoutes from './modules/pharmacies/pharmacies.routes';
 import medicationRoutes from './modules/medications/medications.routes';
 import stockRoutes from './modules/stock/stock.routes';
 import adminRoutes from './modules/admin/admin.routes';
+import clinicRoutes from './modules/clinics/clinics.routes';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api/v1/pharmacies', pharmacyRoutes);
 app.use('/api/v1/medications', medicationRoutes);
 app.use('/api/v1/stock', stockRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/clinics', clinicRoutes);
 
 // ── Rate limiting global ─────────────────────────────────────
 app.use(rateLimit({
