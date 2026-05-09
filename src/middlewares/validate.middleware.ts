@@ -10,7 +10,7 @@ export const validate = (schema: ZodSchema) => {
         statusCode: 422,
         code: 'VALIDATION_ERROR',
         message: 'Données invalides',
-        details: result.error.issues.map((issue) => ({
+        details: result.error.issues.map((issue: any) => ({
           field: issue.path.join('.'),
           message: issue.message,
         })),

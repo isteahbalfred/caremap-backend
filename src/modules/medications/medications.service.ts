@@ -71,17 +71,33 @@ export class MedicationService {
   }
 
   async create(data: CreateMedicationDto) {
-    return prisma.medication.create({
-      data,
-      include: { category: true },
-    });
-  }
+  return prisma.medication.create({
+    data: {
+      name: data.name,
+      genericName: data.genericName,
+      description: data.description,
+      imageUrl: data.imageUrl,
+      categoryId: data.categoryId,
+    },
+    include: { category: true },
+  });
+}
 
-  async update(id: string, data: UpdateMedicationDto) {
-    const medication = await prisma.medication.findUnique({ where: { id } });
-    if (!medication) throw new NotFoundError('Médicament introuvable');
-    return prisma.medication.update({ where: { id }, data, include: { category: true } });
-  }
+async update(id: string, data: UpdateMedicationDto) {
+  const medication = await prisma.medication.findUnique({ where: { id } });
+  if (!medication) throw new NotFoundError('Médicament introuvable');
+  return prisma.medication.update({
+    where: { id },
+    data: {
+      ...(data.name && { name: data.name }),
+      ...(data.genericName && { genericName: data.genericName }),
+      ...(data.description && { description: data.description }),
+      ...(data.imageUrl && { imageUrl: data.imageUrl }),
+      ...(data.categoryId && { categoryId: data.categoryId }),
+    },
+    include: { category: true },
+  });
+}
 
   async getCategories() {
     return prisma.category.findMany({ orderBy: { name: 'asc' } });

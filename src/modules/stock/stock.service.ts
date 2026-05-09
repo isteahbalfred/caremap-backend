@@ -13,19 +13,30 @@ export class StockService {
   }
 
   async addMedication(pharmacyId: string, data: AddStockDto) {
-    const existing = await prisma.medicationStock.findUnique({
-      where: { pharmacyId_medicationId: { pharmacyId, medicationId: data.medicationId } },
-    });
+  const existing = await prisma.medicationStock.findUnique({
+    where: {
+      pharmacyId_medicationId: {
+        pharmacyId,
+        medicationId: data.medicationId,
+      },
+    },
+  });
 
-    if (existing) {
-      throw new AppError(409, 'STOCK_EXISTS', 'Ce médicament est déjà dans votre stock');
-    }
-
-    return prisma.medicationStock.create({
-      data: { pharmacyId, ...data },
-      include: { medication: true },
-    });
+  if (existing) {
+    throw new AppError(409, 'STOCK_EXISTS', 'Ce médicament est déjà dans votre stock');
   }
+
+  return prisma.medicationStock.create({
+    data: {
+      pharmacyId,
+      medicationId: data.medicationId,
+      quantity: data.quantity,
+      price: data.price,
+      threshold: data.threshold || 10,
+    },
+    include: { medication: true },
+  });
+}
 
   async updateStock(id: string, pharmacyId: string, data: UpdateStockDto) {
     const stock = await prisma.medicationStock.findUnique({ where: { id } });

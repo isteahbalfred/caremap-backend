@@ -41,14 +41,25 @@ export class ClinicService {
   }
 
   async create(data: CreateClinicDto & { adminId: string }) {
-    const existing = await prisma.clinic.findUnique({
-      where: { adminId: data.adminId },
-    });
-    if (existing) {
-      throw new AppError(409, 'CLINIC_EXISTS', 'Vous avez déjà une clinique enregistrée');
-    }
-    return prisma.clinic.create({ data });
+  const existing = await prisma.clinic.findUnique({
+    where: { adminId: data.adminId },
+  });
+  if (existing) {
+    throw new AppError(409, 'CLINIC_EXISTS', 'Vous avez déjà une clinique enregistrée');
   }
+  return prisma.clinic.create({
+    data: {
+      name: data.name,
+      address: data.address,
+      city: data.city,
+      phone: data.phone,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      logoUrl: data.logoUrl,
+      adminId: data.adminId,
+    },
+  });
+}
 
   async update(id: string, adminId: string, data: UpdateClinicDto) {
     const clinic = await prisma.clinic.findUnique({ where: { id } });

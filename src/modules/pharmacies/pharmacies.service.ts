@@ -72,34 +72,48 @@ export class PharmacyService {
   }
 
   // ── Créer une pharmacie ──────────────────────────────────
-  async create(data: CreatePharmacyDto & { adminId: string }) {
-    const existing = await prisma.pharmacy.findUnique({
-      where: { adminId: data.adminId },
-    });
+ async create(data: CreatePharmacyDto & { adminId: string }) {
+  const existing = await prisma.pharmacy.findUnique({
+    where: { adminId: data.adminId },
+  });
 
-    if (existing) {
-      throw new AppError(409, 'PHARMACY_EXISTS', 'Vous avez déjà une pharmacie enregistrée');
-    }
-
-    return prisma.pharmacy.create({
-      data,
-    });
+  if (existing) {
+    throw new AppError(409, 'PHARMACY_EXISTS', 'Vous avez déjà une pharmacie enregistrée');
   }
 
-  // ── Mettre à jour une pharmacie ──────────────────────────
-  async update(id: string, adminId: string, data: UpdatePharmacyDto) {
-    const pharmacy = await prisma.pharmacy.findUnique({ where: { id } });
+  return prisma.pharmacy.create({
+    data: {
+      name: data.name,
+      address: data.address,
+      city: data.city,
+      phone: data.phone,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      logoUrl: data.logoUrl,
+      adminId: data.adminId,
+    },
+  });
+}
 
-    if (!pharmacy) throw new NotFoundError('Pharmacie introuvable');
-    if (pharmacy.adminId !== adminId) {
-      throw new AppError(403, 'FORBIDDEN', 'Vous ne pouvez modifier que votre pharmacie');
-    }
-
-    return prisma.pharmacy.update({
-      where: { id },
-      data,
-    });
+async update(id: string, adminId: string, data: UpdatePharmacyDto) {
+  const pharmacy = await prisma.pharmacy.findUnique({ where: { id } });
+  if (!pharmacy) throw new NotFoundError('Pharmacie introuvable');
+  if (pharmacy.adminId !== adminId) {
+    throw new AppError(403, 'FORBIDDEN', 'Vous ne pouvez modifier que votre pharmacie');
   }
+  return prisma.pharmacy.update({
+    where: { id },
+    data: {
+      ...(data.name && { name: data.name }),
+      ...(data.address && { address: data.address }),
+      ...(data.city && { city: data.city }),
+      ...(data.phone && { phone: data.phone }),
+      ...(data.latitude && { latitude: data.latitude }),
+      ...(data.longitude && { longitude: data.longitude }),
+      ...(data.logoUrl && { logoUrl: data.logoUrl }),
+    },
+  });
+}
 
   // ── Dashboard pharmacien ─────────────────────────────────
   async getDashboard(adminId: string) {
