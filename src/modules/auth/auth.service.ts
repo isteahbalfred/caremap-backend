@@ -10,6 +10,7 @@ import {
   AppError,
 } from '../../middlewares/errorHandler';
 import { RegisterDto, LoginDto } from './auth.validation';
+import { getGoogleUser } from './google.strategy';
 
 export class AuthService {
   // ── Register ────────────────────────────────────────────
@@ -59,6 +60,71 @@ export class AuthService {
       throw new UnauthorizedError('Email ou mot de passe incorrect');
     }
 
+    const payload = { id: user.id, email: user.email, role: user.role };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    const hashedRefresh = await hashPassword(refreshToken);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken: hashedRefresh },
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    };
+  }
+
+  // ── Google OAuth ─────────────────────────────────────────
+  async loginWithGoogle(code: string) {
+    // 1. Récupérer le profil Google via le code OAuth
+    const googleUser = await getGoogleUser(code);
+
+    // 2. Chercher un compte existant par googleId ou par email
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { googleId: googleUser.googleId },
+          { email: googleUser.email },
+        ],
+      },
+    });
+
+    if (user) {
+      // Compte existant — lier le googleId s'il ne l'est pas encore
+      if (!user.googleId) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId: googleUser.googleId },
+        });
+      }
+
+      if (!user.isActive) {
+        throw new AppError(403, 'ACCOUNT_DISABLED', 'Votre compte est désactivé');
+      }
+    } else {
+      // Nouveau compte — création automatique
+      user = await prisma.user.create({
+        data: {
+          email: googleUser.email,
+          firstName: googleUser.firstName,
+          lastName: googleUser.lastName,
+          googleId: googleUser.googleId,
+          // Mot de passe vide hashé — connexion Google uniquement
+          password: await hashPassword(Math.random().toString(36) + Date.now()),
+        },
+      });
+    }
+
+    // 3. Générer les tokens JWT CareMap
     const payload = { id: user.id, email: user.email, role: user.role };
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);

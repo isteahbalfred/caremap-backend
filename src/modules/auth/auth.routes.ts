@@ -18,10 +18,17 @@ const authLimiter = rateLimit({
   },
 });
 
+// ── Routes classiques ──────────────────────────────────────
 router.post('/register', authLimiter, validate(RegisterSchema), controller.register);
 router.post('/login', authLimiter, validate(LoginSchema), controller.login);
 router.post('/refresh', validate(RefreshSchema), controller.refresh);
 router.post('/logout', authenticate, controller.logout);
 router.get('/me', authenticate, controller.me);
+
+// ── Google OAuth ───────────────────────────────────────────
+// GET /api/v1/auth/google        → redirige vers la page de connexion Google
+// GET /api/v1/auth/google/callback → Google rappelle ici avec le code
+router.get('/google', controller.googleRedirect);
+router.get('/google/callback', controller.googleCallback);
 
 export default router;

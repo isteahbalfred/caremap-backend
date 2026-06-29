@@ -1,8 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
-import dotenv from 'dotenv';
 import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './modules/auth/auth.routes';
 import pharmacyRoutes from './modules/pharmacies/pharmacies.routes';
@@ -11,7 +12,6 @@ import stockRoutes from './modules/stock/stock.routes';
 import adminRoutes from './modules/admin/admin.routes';
 import clinicRoutes from './modules/clinics/clinics.routes';
 
-dotenv.config();
 
 const app = express();
 

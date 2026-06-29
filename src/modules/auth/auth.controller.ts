@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
+import { buildGoogleAuthUrl } from './google.strategy';
 
 const authService = new AuthService();
 
@@ -38,5 +39,38 @@ export class AuthController {
     try {
       res.json({ success: true, data: (req as any).user });
     } catch (error) { next(error); }
+  };
+
+  // ── Google OAuth — Étape 1 : redirection vers Google ────
+  googleRedirect = (_req: Request, res: Response) => {
+    const url = buildGoogleAuthUrl();
+    res.redirect(url);
+  };
+
+  // ── Google OAuth — Étape 2 : callback après autorisation ─
+  googleCallback = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const code = req.query.code as string;
+
+      if (!code) {
+        // L'utilisateur a annulé ou Google a refusé
+        return res.redirect(
+          `${process.env.FRONTEND_URL}/login?error=google_cancelled`
+        );
+      }
+
+      const result = await authService.loginWithGoogle(code);
+
+      // Redirection vers le frontend avec les tokens en query params
+      // Le frontend les intercepte via authService.handleGoogleCallback()
+      const params = new URLSearchParams({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
+
+      res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?${params.toString()}`);
+    } catch (error) {
+      next(error);
+    }
   };
 }
