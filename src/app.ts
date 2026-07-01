@@ -11,7 +11,7 @@ import medicationRoutes from './modules/medications/medications.routes';
 import stockRoutes from './modules/stock/stock.routes';
 import adminRoutes from './modules/admin/admin.routes';
 import clinicRoutes from './modules/clinics/clinics.routes';
-
+import chatRoutes from "./routes/chat.routes";
 
 const app = express();
 
@@ -23,12 +23,14 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/pharmacies', pharmacyRoutes);
 app.use('/api/v1/medications', medicationRoutes);
 app.use('/api/v1/stock', stockRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/clinics', clinicRoutes);
+app.use("/api/v1/chat", chatRoutes);
 
 // ── Rate limiting global ─────────────────────────────────────
 app.use(rateLimit({
